@@ -128,7 +128,18 @@ public class PlayerFarming : MonoBehaviour
 
     private void UseTool(Vector3Int gridPos, GridPropertyDetails gridDetails)
     {
-       
+        // First, check if there's a crop at this position that can be harvested
+        Crop cropAtPosition = GetCropAtGridPosition(gridPos);
+
+        if (cropAtPosition != null)
+        {
+            // There's a crop here, try to harvest it with the current tool
+            Debug.Log($"✅ Found crop at position, attempting to harvest with tool {currentItem.itemID}");
+            ProcessCropWithTool(cropAtPosition, gridDetails);
+            return;
+        }
+
+        // No crop, so use tool on ground
         if (currentItem.itemID == 6001)
         {
             TryDigGround(gridPos, gridDetails);
@@ -137,6 +148,45 @@ public class PlayerFarming : MonoBehaviour
         {
             TryWaterGround(gridPos, gridDetails);
         }
+    }
+
+    private Crop GetCropAtGridPosition(Vector3Int gridPos)
+    {
+        // Convert grid position to world position
+        Vector3 worldPos = grid.CellToWorld(gridPos);
+        // Adjust to center of cell
+        worldPos += new Vector3(0.5f, 0.5f, 0f);
+
+        // Check for crop at this position using a small overlap check
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(worldPos, 0.5f);
+
+        foreach (Collider2D collider in colliders)
+        {
+            Crop crop = collider.GetComponent<Crop>();
+            if (crop != null)
+            {
+                Debug.Log($"✅ Found crop GameObject: {crop.gameObject.name}");
+                return crop;
+            }
+        }
+
+        Debug.Log($"ℹ️ No crop found at world position {worldPos}");
+        return null;
+    }
+
+    private void ProcessCropWithTool(Crop crop, GridPropertyDetails gridDetails)
+    {
+        // Determine tool direction based on player position relative to crop
+        // For now, using default right/up direction
+        // You can enhance this later to detect actual player direction
+        bool isToolRight = true;
+        bool isToolLeft = false;
+        bool isToolDown = false;
+        bool isToolUp = false;
+
+        // Call the crop's ProcessToolAction method
+        Debug.Log($"Calling crop.ProcessToolAction with tool {currentItem.name}");
+        crop.ProcessToolAction(currentItem, isToolRight, isToolLeft, isToolDown, isToolUp);
     }
 
     private void TryDigGround(Vector3Int pos, GridPropertyDetails details)

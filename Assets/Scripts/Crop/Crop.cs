@@ -34,6 +34,11 @@ public class Crop : MonoBehaviour
         if (gridPropertyDetails == null)
             return;
 
+        // Get crop details
+        CropDetails cropDetails = GridPropertiesManager.Instance.GetCropDetails(gridPropertyDetails.seedItemCode);
+
+        if (cropDetails == null)
+            return;
 
         // Get animator for crop if present
         Animator animator = GetComponentInChildren<Animator>();
@@ -53,12 +58,25 @@ public class Crop : MonoBehaviour
 
         // Trigger tool particle effect on crop
 
+        // Get required harvest actions for this tool
+        int requiredHarvestActions = cropDetails.RequiredHarvestActionsForTool(equippedItemDetails.itemID);
 
-
+        if (requiredHarvestActions == -1)
+            return; // This tool cannot harvest this crop
 
         // Increment harvest action count
         harvestActionCount += 1;
         SpawnHarvestEffect();
+
+        // Check if enough actions have been performed to harvest
+        if (harvestActionCount >= requiredHarvestActions)
+        {
+            // Reset harvest action count
+            harvestActionCount = 0;
+
+            // Harvest the crop
+            HarvestCrop(isToolRight, isToolUp, cropDetails, gridPropertyDetails, animator);
+        }
     }
 
     private void HarvestCrop(bool isUsingToolRight, bool isUsingToolUp, CropDetails cropDetails, GridPropertyDetails gridPropertyDetails, Animator animator)

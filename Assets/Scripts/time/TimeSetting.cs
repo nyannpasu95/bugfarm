@@ -23,6 +23,7 @@ public class GameTimeWithDayNight : MonoBehaviour
 
     private bool isDay = true; // 白天状态
     private bool isTransitioning = false;
+    private bool hasAdvancedDay = false; // 防止一天内多次触发日期推进
 
     private float minutesPerSecond;
 
@@ -43,7 +44,22 @@ public class GameTimeWithDayNight : MonoBehaviour
             gameMinute -= 60f;
             currentTime += 1f;
             if (currentTime >= 24f)
+            {
                 currentTime = 0f;
+                // 只在午夜12点时推进一天
+                if (!hasAdvancedDay)
+                {
+                    day++;
+                    EventHandler.CallAdvanceGameDayEvent();
+                    hasAdvancedDay = true;
+                }
+            }
+        }
+
+        // 重置日期推进标志（在白天某个时间点）
+        if (currentTime >= 1f && hasAdvancedDay)
+        {
+            hasAdvancedDay = false;
         }
 
         float displayMinute = Mathf.Floor(gameMinute / 10f) * 10f;
@@ -62,7 +78,6 @@ public class GameTimeWithDayNight : MonoBehaviour
             SetMinutesPerSecond();
             isTransitioning = false;
         }
-        EventHandler.CallAdvanceGameDayEvent();
 
         // 入夜渐变
         if (isDay && currentTime == 17 && !isTransitioning)

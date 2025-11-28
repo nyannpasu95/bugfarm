@@ -14,8 +14,6 @@ public class GridCursor : MonoBehaviour
     [SerializeField] private Sprite greenCursorSprite = null;
     [SerializeField] private Sprite redCursorSprite = null;
 
-    [SerializeField] private SO_CropDetailsList so_CropDetailsList = null;
-
     private bool _cursorPositionIsValid = false;
     public bool CursorPositionIsValid { get => _cursorPositionIsValid; set => _cursorPositionIsValid = value; }
 
